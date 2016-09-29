@@ -30,19 +30,21 @@ object PerfMain{
     val cutoff = 400 * 1000 * 1000
 
     printRow("Size", sizes)
-    val output = mutable.Map.empty[(String, String), mutable.Buffer[Long]]
+    val output = mutable.Map.empty[(String, String, Long), mutable.Buffer[Long]]
     val cutoffSizes = mutable.Map.empty[(String, String), Int]
     for(i <- 1 to repeats){
+      println("Run " + i)
       for(benchmark <- Benchmark.benchmarks){
         println()
         println(benchmark.name)
         println()
         for (bench <- benchmark.cases){
           val key = benchmark.name -> bench.name
-          val buf = output.getOrElseUpdate(key, mutable.Buffer())
+
 
           val times =
             for(size <- sizes if !(cutoffSizes.getOrElse(key, Int.MaxValue) < size)) yield{
+              val buf = output.getOrElseUpdate((benchmark.name, bench.name, size), mutable.Buffer())
               def handle(run: Boolean) = {
                 System.gc()
 
@@ -68,7 +70,7 @@ object PerfMain{
               }
               res
             }
-          printRow(bench.name + i, times)
+          printRow(bench.name, times)
         }
       }
     }

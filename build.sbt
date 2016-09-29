@@ -14,7 +14,7 @@ val bench = project
   .settings(
     sharedSettings,
     fork in run := true,
-    libraryDependencies += "com.lihaoyi" %% "upickle" % "0.4.1",
-    libraryDependencies += "com.lihaoyi" %% "ammonite-ops" % "0.7.7",
+
+    libraryDependencies += "com.lihaoyi" % "ammonite_2.11.8" % "0.7.7",
     javaOptions in run += ("-javaagent:" + (packageBin in (agent, Compile)).value)
 )
