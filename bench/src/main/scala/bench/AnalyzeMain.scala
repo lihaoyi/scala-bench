@@ -1,10 +1,8 @@
 package bench
-import java.math.{MathContext, RoundingMode}
 import java.text.{DecimalFormat, NumberFormat}
 import java.util.Locale
 
 import ammonite.ops._
-import pprint.Config.Colors._
 /**
   * Created by haoyi on 9/26/16.
   */
