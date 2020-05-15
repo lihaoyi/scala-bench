@@ -4,12 +4,10 @@ import java.text.NumberFormat
 import java.util.Locale
 
 import better.files.File
+import org.json4s._
 import org.json4s.native.Serialization
 
-import scala.collection.JavaConverters._
-import scala.collection.immutable.Queue
-import scala.collection.{SortedSet, mutable}
-import org.json4s._
+import scala.collection.mutable
 
 object PerfMain{
 
