@@ -25,6 +25,24 @@ object Benchmark{
         }
         b
       },
+      Case("ListBuilder", n=>n){ n =>
+        val b = List.newBuilder[Object]
+        var i = 0
+        while(i < n){
+          b += obj
+          i += 1
+        }
+        b
+      },
+      Case("ListReversse", n=>n){ n =>
+        var b = List.empty[Object]
+        var i = 0
+        while(i < n){
+          b = obj :: b
+          i += 1
+        }
+        b.reverse
+      },
       Case("Vector", n=>n){ n =>
         var b = Vector.empty[Object]
         var i = 0
@@ -34,20 +52,11 @@ object Benchmark{
         }
         b
       },
-      Case("Set", n=>n){ n =>
-        var b = Set.empty[Object]
+      Case("VectorBuilder", n=>n){ n =>
+        val b = Vector.newBuilder[Object]
         var i = 0
         while(i < n){
-          b = b + obj
-          i += 1
-        }
-        b
-      },
-      Case("Map", n=>n){ n =>
-        var b = Map.empty[Object, Object]
-        var i = 0
-        while(i < n){
-          b = b + (obj -> obj)
+          b += obj
           i += 1
         }
         b
@@ -70,6 +79,34 @@ object Benchmark{
         }
         b
       },
+      Case("ArrayBuilder", n=>n){ n =>
+        val b = Array.newBuilder[Object]
+        var i = 0
+        while(i < n){
+          b += obj
+          i += 1
+        }
+        b.result()
+      },
+      Case("Set", n=>n){ n =>
+        var b = Set.empty[Object]
+        var i = 0
+        while(i < n){
+          b = b + obj
+          i += 1
+        }
+        b
+      },
+      Case("Map", n=>n){ n =>
+        var b = Map.empty[Object, Object]
+        var i = 0
+        while(i < n){
+          b = b + (obj -> obj)
+          i += 1
+        }
+        b
+      },
+
       Case("Array.toSet", n=>n){ n =>
         val b = new Array[Object](n)
         var i = 0
@@ -161,7 +198,7 @@ object Benchmark{
         while (a.nonEmpty) a.remove(a.length-1)
         a
       },
-      Case("m.Set.remove", Array.fill(_)(obj).to[mutable.Set]){ a =>
+      Case("m.Set.remove", x => mutable.Set(Array.fill(x)(obj):_*)){ a =>
         while (a.nonEmpty) a.remove(a.head)
         a
       },
@@ -195,9 +232,6 @@ object Benchmark{
       },
       Case("m.Buffer", x => pair(mutable.Buffer.fill(x)(obj))){ case (a, b) =>
         a.appendAll(b)
-      },
-      Case("m.Set", x => pair(Array.fill(x)(obj).to[mutable.Set])){ case (a, b) =>
-        a ++= b
       },
       Case("m.Map", x => pair(mutable.Map(Array.fill(x)(obj -> obj):_*))){ case (a, b) =>
         a ++= b
@@ -280,15 +314,6 @@ object Benchmark{
         var last = nullO
         var i = 0
         while(i < 100) {
-          a.foreach(last = _)
-          i += 1
-        }
-        last
-      },
-      Case("m.Set", Array.fill(_)(obj).to[mutable.Set]){ a =>
-        var last = nullO
-        var i = 0
-        while(i < 10) {
           a.foreach(last = _)
           i += 1
         }
@@ -388,23 +413,6 @@ object Benchmark{
           var j = 0
           while (j < n) {
             last = a(j)
-            j += 1
-          }
-          i += 1
-        }
-        last
-      },
-      Case("m.Set", x => {
-        val r = Array.fill(x)(obj)
-        r -> r.to[mutable.Set]
-      }){ case (keys, a) =>
-        var last = false
-        var i = 0
-        while(i < 100) {
-          val n = keys.length
-          var j = 0
-          while (j < n) {
-            last = a(keys(j))
             j += 1
           }
           i += 1

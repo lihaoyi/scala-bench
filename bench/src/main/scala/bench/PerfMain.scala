@@ -3,10 +3,13 @@ package bench
 import java.text.NumberFormat
 import java.util.Locale
 
+import better.files.File
+import org.json4s.native.Serialization
+
 import scala.collection.JavaConverters._
 import scala.collection.immutable.Queue
 import scala.collection.{SortedSet, mutable}
-
+import org.json4s._
 
 object PerfMain{
 
@@ -21,7 +24,7 @@ object PerfMain{
       )
     }
     // How large the collections will be in each benchmark
-    val sizes = Seq(0, 1, 4, 16, 64, 256, 1024, 4096, 16192, 65536, 262144, 1048576)
+    val sizes = (0 to 25).map(Math.pow(2, _).toInt)
     // How many times to repeat each benchmark
     val repeats = 7
     // How long each benchmark runs, in millis
@@ -74,10 +77,9 @@ object PerfMain{
         }
       }
     }
-    import ammonite.ops._
-    write(
-      pwd/'target/"results.json",
-      upickle.default.write(output.mapValues(_.toList).toMap)
+    implicit val formats = Serialization.formats(NoTypeHints)
+    File(s"target/results${util.Properties.versionNumberString}.json").write(
+      Serialization.write(output.mapValues(_.toList).toMap)
     )
   }
 }
