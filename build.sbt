@@ -18,5 +18,4 @@ val bench = project
       case PathList("META-INF", xs @ _*) => MergeStrategy.discard
       case x                             => MergeStrategy.first
     }
-    mainClass in assembly := Some("Main")
   )

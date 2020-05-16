@@ -13,8 +13,8 @@ object PerfMain{
 
   def main(args: Array[String]): Unit = {
 
-    def printRow[I: Integral](name: String, items: Seq[I]) = {
-      val width = 15
+    def printRow[I](name: String, items: Seq[I]) = {
+      val width = 25
       println(
         name.padTo(width, ' ') +
         items.map(NumberFormat.getNumberInstance(Locale.US).format)
@@ -22,16 +22,16 @@ object PerfMain{
       )
     }
     // How large the collections will be in each benchmark
-    val sizes = (0 to 25).map(Math.pow(2, _).toInt)
+    val sizes = (4 to 22).map(Math.pow(2, _).toInt)
     // How many times to repeat each benchmark
-    val repeats = 7
+    val repeats = 3
     // How long each benchmark runs, in millis
-    val duration = 2000
+    val duration = 500
     // How long a benchmark can run before we stop incrementing it
-    val cutoff = 400 * 1000 * 1000
+    val cutoff = 200 * 1000 * 1000
 
     printRow("Size", sizes)
-    val output = mutable.Map.empty[(String, String, Long), mutable.Buffer[Long]]
+    val output = mutable.Map.empty[(String, String, Double), mutable.Buffer[Double]]
     val cutoffSizes = mutable.Map.empty[(String, String), Int]
     for(i <- 1 to repeats){
       println("Run " + i)
@@ -49,19 +49,19 @@ object PerfMain{
               def handle(run: Boolean) = {
                 System.gc()
 
-                val start = System.currentTimeMillis()
+                val start = System.nanoTime()
                 var count = 0
-                while(System.currentTimeMillis() - start < duration){
+                while(System.nanoTime() - start < duration * 1000000 ){
                   if (run) bench.run(size)
                   else bench.initializer(size)
                   count += 1
                 }
-                val end = System.currentTimeMillis()
+                val end = System.nanoTime()
                 (count, end - start)
               }
               val (initCounts, initTime) = handle(run = false)
               val (runCounts, runTime) = handle(run = true)
-              val res = ((runTime.toDouble / runCounts - initTime.toDouble / initCounts) * 1000000).toLong
+              val res = ((runTime.toDouble / runCounts - initTime.toDouble / initCounts))
               buf.append(res)
               if (res > cutoff) {
                 cutoffSizes(key) = math.min(
@@ -76,8 +76,8 @@ object PerfMain{
       }
     }
     implicit val formats = Serialization.formats(NoTypeHints)
-    File(s"target/results${util.Properties.versionNumberString}.json").write(
-      Serialization.write(output.mapValues(_.toList).toMap)
+    File(s"target/results${util.Properties.versionNumberString}2.json").write(
+      Serialization.write(output.map{case (key, value) => key.productIterator.mkString("|") -> value.toList}.toMap)
     )
   }
 }
