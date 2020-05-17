@@ -17,8 +17,13 @@ object PerfMain{
       val width = 25
       println(
         name.padTo(width, ' ') +
-        items.map(NumberFormat.getNumberInstance(Locale.US).format)
-             .map(_.reverse.padTo(width, ' ').reverse).mkString
+        items
+          .map{
+            case x: Double => Math.round(x)
+            case x => x
+          }
+          .map(NumberFormat.getNumberInstance(Locale.US).format)
+          .map(_.reverse.padTo(width, ' ').reverse).mkString
       )
     }
     // How large the collections will be in each benchmark
