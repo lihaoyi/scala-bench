@@ -2,50 +2,48 @@ package bench
 import java.text.NumberFormat
 import java.util.Locale
 
-import scala.collection.immutable.{Queue, Stack}
+import scala.collection.JavaConverters._
+import scala.collection.immutable.Queue
 import scala.collection.{SortedSet, mutable}
-import collection.JavaConverters._
+import scala.reflect.ClassTag
 object MemoryMain{
   def main(args: Array[String]): Unit = {
     def obj = new Object()
-    def nums[T](n: Int, f: Int => T) = (0 until n).iterator.map(f)
+    def nums[T:ClassTag](n: Int, f: Int => T) = (0 until n).iterator.map(f).toArray
     val collections = Seq[(String, Int => AnyRef)](
-      ("Vector",          nums(_, _ => obj).toVector),
-      ("Array",           nums(_, _ => obj).toArray),
-      ("List",            nums(_, _ => obj).toList),
-      ("UnforcedStream",  nums(_, _ => obj).toStream),
-      ("ForcedStream",    {n => val x = nums(n, _ => obj).toStream; x.foreach(x => ()); x}),
-      ("Set",             nums(_, _ => obj).toSet),
-      ("Map",             nums(_, _ => (obj, obj)).toMap),
+      ("Vector",          n => Vector(nums(n, _ => obj):_*)),
+      ("Array",           n => Array(nums(n, _ => obj):_*)),
+      ("List",            n => List(nums(n, _ => obj):_*)),
+      ("Set",             n => Set(nums(n, _ => obj):_*)),
+      ("Map",             n => Map(nums(n, _ => (obj, obj)):_*)),
 
-      ("SortedSet", nums(_, x=>x).to[SortedSet]),
-      ("Queue",     nums(_, _ => obj).to[Queue]),
+      ("SortedSet", n => SortedSet(nums(n, x=>x):_*)),
+      ("Queue",     n => Queue(nums(n, _ => obj):_*)),
 
-      ("m.Buffer",    nums(_, _ => obj).to[mutable.Buffer]),
-      ("m.Map",       n => mutable.Map(nums(n, _ => (obj, obj)).toSeq:_*)),
-      ("m.Set",       nums(_, _ => obj).to[mutable.Set]),
-      ("m.Queue",     nums(_, _ => obj).to[mutable.Queue]),
-      ("m.PriQueue",  nums(_, x=>x).to[mutable.PriorityQueue]),
-      ("m.Stack",     nums(_, _ => obj).to[mutable.Stack]),
-      ("m.SortedSet", nums(_, x=>x).to[mutable.SortedSet]),
+      ("m.Map",       n =>mutable.Map(nums(n, _ => (obj, obj)).toSeq:_*)),
+        ("m.Buffer",    n =>mutable.Buffer(nums(n, _ => obj):_*)),
+        ("m.Set",       n =>mutable.Set(nums(n, _ => obj):_*)),
+      ("m.Queue",     n =>mutable.Queue(nums(n, _ => obj):_*)),
+      ("m.PriQueue",  n =>mutable.PriorityQueue(nums(n, x=>x):_*)),
+      ("m.SortedSet", n =>mutable.SortedSet(nums(n, x=>x):_*)),
 
       ("String",  "1" * _),
 
-      ("ArrayBoolean",  nums(_, _ % 2 == 0).toArray),
-      ("ArrayByte",     nums(_, _.toByte).toArray),
-      ("ArrayShort",    nums(_, _.toShort).toArray),
-      ("ArrayInt",      nums(_, _.toInt).toArray),
-      ("ArrayLong",     nums(_, _.toLong).toArray),
+      ("ArrayBoolean",  n => nums(n, _ % 2 == 0)),
+      ("ArrayByte",     n => nums(n, _.toByte)),
+      ("ArrayShort",    n => nums(n, _.toShort)),
+      ("ArrayInt",      n => nums(n, _.toInt)),
+      ("ArrayLong",     n => nums(n, _.toLong)),
 
-      ("BoxArrayBoolean", nums(_, x => (x % 2 == 0).asInstanceOf[AnyRef]).toArray),
-      ("BoxArrayByte",    nums(_, _.toByte.asInstanceOf[AnyRef]).toArray),
-      ("BoxArrayShort",   nums(_, _.toShort.asInstanceOf[AnyRef]).toArray),
-      ("BoxArrayInt",     nums(_, _.toInt.asInstanceOf[AnyRef]).toArray),
-      ("BoxArrayLong",    nums(_, _.toLong.asInstanceOf[AnyRef]).toArray),
+      ("BoxArrayBoolean", n => nums(n, x => (x % 2 == 0).asInstanceOf[AnyRef])),
+      ("BoxArrayByte",    n => nums(n, _.toByte.asInstanceOf[AnyRef])),
+      ("BoxArrayShort",   n => nums(n, _.toShort.asInstanceOf[AnyRef])),
+      ("BoxArrayInt",     n => nums(n, _.toInt.asInstanceOf[AnyRef])),
+      ("BoxArrayLong",    n => nums(n, _.toLong.asInstanceOf[AnyRef]))
 
-      ("j.List",    nums(_, _.toLong.asInstanceOf[AnyRef]).toBuffer.asJava: java.util.List[AnyRef]),
-      ("j.Map",       n => mutable.Map(nums(n, _ => (obj, obj)).toSeq:_*).asJava: java.util.Map[AnyRef, AnyRef]),
-      ("j.Set",     nums(_, _ => obj).to[mutable.Set].asJava: java.util.Set[AnyRef])
+//      ("j.List",    nums(_, _.toLong.asInstanceOf[AnyRef]).toBuffer.asJava: java.util.List[AnyRef]),
+//      ("j.Map",       n => mutable.Map(nums(n, _ => (obj, obj)).toSeq:_*).asJava: java.util.Map[AnyRef, AnyRef]),
+//      ("j.Set",     nums(_, _ => obj).to[mutable.Set].asJava: java.util.Set[AnyRef])
     )
     val sizes = Seq(0, 1, 4, 16, 64, 256, 1024, 4069, 16192, 65536, 262144, 1048576)
     val results = for((name, factory) <- collections) yield {

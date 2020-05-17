@@ -3,34 +3,40 @@ package bench
 import java.text.NumberFormat
 import java.util.Locale
 
-import scala.collection.JavaConverters._
-import scala.collection.immutable.Queue
-import scala.collection.{SortedSet, mutable}
+import better.files.File
+import org.json4s._
+import org.json4s.native.Serialization
 
+import scala.collection.mutable
 
 object PerfMain{
 
   def main(args: Array[String]): Unit = {
 
-    def printRow[I: Integral](name: String, items: Seq[I]) = {
-      val width = 15
+    def printRow[I](name: String, items: Seq[I]) = {
+      val width = 25
       println(
         name.padTo(width, ' ') +
-        items.map(NumberFormat.getNumberInstance(Locale.US).format)
-             .map(_.reverse.padTo(width, ' ').reverse).mkString
+        items
+          .map{
+            case x: Double => Math.round(x)
+            case x => x
+          }
+          .map(NumberFormat.getNumberInstance(Locale.US).format)
+          .map(_.reverse.padTo(width, ' ').reverse).mkString
       )
     }
     // How large the collections will be in each benchmark
-    val sizes = Seq(0, 1, 4, 16, 64, 256, 1024, 4096, 16192, 65536, 262144, 1048576)
+    val sizes = (4 to 22).map(Math.pow(2, _).toInt)
     // How many times to repeat each benchmark
-    val repeats = 7
+    val repeats = 3
     // How long each benchmark runs, in millis
-    val duration = 2000
+    val duration = 500
     // How long a benchmark can run before we stop incrementing it
-    val cutoff = 400 * 1000 * 1000
+    val cutoff = 200 * 1000 * 1000
 
     printRow("Size", sizes)
-    val output = mutable.Map.empty[(String, String, Long), mutable.Buffer[Long]]
+    val output = mutable.Map.empty[(String, String, Double), mutable.Buffer[Double]]
     val cutoffSizes = mutable.Map.empty[(String, String), Int]
     for(i <- 1 to repeats){
       println("Run " + i)
@@ -48,19 +54,19 @@ object PerfMain{
               def handle(run: Boolean) = {
                 System.gc()
 
-                val start = System.currentTimeMillis()
+                val start = System.nanoTime()
                 var count = 0
-                while(System.currentTimeMillis() - start < duration){
+                while(System.nanoTime() - start < duration * 1000000 ){
                   if (run) bench.run(size)
                   else bench.initializer(size)
                   count += 1
                 }
-                val end = System.currentTimeMillis()
+                val end = System.nanoTime()
                 (count, end - start)
               }
               val (initCounts, initTime) = handle(run = false)
               val (runCounts, runTime) = handle(run = true)
-              val res = ((runTime.toDouble / runCounts - initTime.toDouble / initCounts) * 1000000).toLong
+              val res = ((runTime.toDouble / runCounts - initTime.toDouble / initCounts))
               buf.append(res)
               if (res > cutoff) {
                 cutoffSizes(key) = math.min(
@@ -74,10 +80,9 @@ object PerfMain{
         }
       }
     }
-    import ammonite.ops._
-    write(
-      pwd/'target/"results.json",
-      upickle.default.write(output.mapValues(_.toList).toMap)
+    implicit val formats = Serialization.formats(NoTypeHints)
+    File(s"target/results${util.Properties.versionNumberString}2.json").write(
+      Serialization.write(output.map{case (key, value) => key.productIterator.mkString("|") -> value.toList}.toMap)
     )
   }
 }

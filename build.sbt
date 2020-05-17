@@ -1,20 +1,21 @@
-
-val sharedSettings = Seq(
-  scalaVersion := "2.11.8"
-)
+val scalaVersions = Seq("2.11.12", "2.12.11", "2.13.2")
 val agent = project
   .settings(
-    sharedSettings,
-    packageOptions in (Compile, packageBin) += 
-     Package.ManifestAttributes( "Premain-Class" -> "agent.Agent" )
+    crossScalaVersions := scalaVersions,
+    packageOptions in (Compile, packageBin) +=
+      Package.ManifestAttributes("Premain-Class" -> "agent.Agent")
   )
 
 val bench = project
   .dependsOn(agent)
   .settings(
-    sharedSettings,
+    crossScalaVersions := scalaVersions,
     fork in run := true,
-
-    libraryDependencies += "com.lihaoyi" % "ammonite_2.11.8" % "0.7.7",
-    javaOptions in run += ("-javaagent:" + (packageBin in (agent, Compile)).value)
-)
+    libraryDependencies += "com.github.pathikrit" %% "better-files" % "3.8.0",
+    libraryDependencies += "org.json4s" %% "json4s-native" % "3.6.8",
+    javaOptions in run += ("-javaagent:" + (packageBin in (agent, Compile)).value),
+    assemblyMergeStrategy in assembly := {
+      case PathList("META-INF", xs @ _*) => MergeStrategy.discard
+      case x                             => MergeStrategy.first
+    }
+  )
