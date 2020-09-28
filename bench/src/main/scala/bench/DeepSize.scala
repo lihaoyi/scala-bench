@@ -8,7 +8,7 @@ import scala.collection.mutable
 object DeepSize {
   private val SKIP_POOLED_OBJECTS: Boolean = false
 
-  private def isPooled(paramObject: AnyRef): Boolean = {
+  private def isPooled(paramObject: Any): Boolean = {
     paramObject match{
       case e: java.lang.Enum[_]   => true
       case s: java.lang.String    => s eq s.intern()
@@ -29,17 +29,17 @@ object DeepSize {
     * object to calculate size of
     * @return object deep size
     */
-  def apply(obj: AnyRef): Long = {
+  def apply(obj: Any): Long = {
     deepSizeOf(obj)
   }
 
-  private def skipObject(obj: AnyRef, previouslyVisited: util.Map[AnyRef, AnyRef]): Boolean = {
+  private def skipObject(obj: Any, previouslyVisited: util.Map[Any, Any]): Boolean = {
     if (SKIP_POOLED_OBJECTS && isPooled(obj)) return true
     (obj == null) || previouslyVisited.containsKey(obj)
   }
 
-  private def deepSizeOf(obj0: AnyRef): Long = {
-    val previouslyVisited = new util.IdentityHashMap[AnyRef, AnyRef]
+  private def deepSizeOf(obj0: Any): Long = {
+    val previouslyVisited = new util.IdentityHashMap[Any, Any]
     val objectQueue = mutable.Queue(obj0)
     var current = 0L
     while(objectQueue.nonEmpty){

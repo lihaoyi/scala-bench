@@ -1,6 +1,6 @@
 
 val sharedSettings = Seq(
-  scalaVersion := "2.11.8"
+  scalaVersion := "2.13.3"
 )
 val agent = project
   .settings(
@@ -15,6 +15,6 @@ val bench = project
     sharedSettings,
     fork in run := true,
 
-    libraryDependencies += "com.lihaoyi" % "ammonite_2.11.8" % "0.7.7",
+    libraryDependencies +=  "com.lihaoyi" % "ammonite_2.13.3" % "2.2.0",
     javaOptions in run += ("-javaagent:" + (packageBin in (agent, Compile)).value)
 )
