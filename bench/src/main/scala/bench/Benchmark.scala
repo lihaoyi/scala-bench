@@ -161,7 +161,7 @@ object Benchmark{
         while (a.nonEmpty) a.remove(a.length-1)
         a
       },
-      Case("m.Set.remove", Array.fill(_)(obj).to[mutable.Set]){ a =>
+      Case("m.Set.remove", Array.fill(_)(obj).to(mutable.Set)){ a =>
         while (a.nonEmpty) a.remove(a.head)
         a
       },
@@ -196,7 +196,7 @@ object Benchmark{
       Case("m.Buffer", x => pair(mutable.Buffer.fill(x)(obj))){ case (a, b) =>
         a.appendAll(b)
       },
-      Case("m.Set", x => pair(Array.fill(x)(obj).to[mutable.Set])){ case (a, b) =>
+      Case("m.Set", x => pair(Array.fill(x)(obj).to(mutable.Set))){ case (a, b) =>
         a ++= b
       },
       Case("m.Map", x => pair(mutable.Map(Array.fill(x)(obj -> obj):_*))){ case (a, b) =>
@@ -285,7 +285,7 @@ object Benchmark{
         }
         last
       },
-      Case("m.Set", Array.fill(_)(obj).to[mutable.Set]){ a =>
+      Case("m.Set", Array.fill(_)(obj).to(mutable.Set)){ a =>
         var last = nullO
         var i = 0
         while(i < 10) {
@@ -396,7 +396,7 @@ object Benchmark{
       },
       Case("m.Set", x => {
         val r = Array.fill(x)(obj)
-        r -> r.to[mutable.Set]
+        r -> r.to(mutable.Set)
       }){ case (keys, a) =>
         var last = false
         var i = 0

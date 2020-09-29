@@ -3,9 +3,7 @@ package bench
 import java.text.NumberFormat
 import java.util.Locale
 
-import scala.collection.JavaConverters._
-import scala.collection.immutable.Queue
-import scala.collection.{SortedSet, mutable}
+import scala.collection.mutable
 
 
 object PerfMain{
@@ -76,8 +74,8 @@ object PerfMain{
     }
     import ammonite.ops._
     write(
-      pwd/'target/"results.json",
-      upickle.default.write(output.mapValues(_.toList).toMap)
+      pwd/Symbol("target")/"results.json",
+      upickle.default.write(output.view.mapValues(_.toList).toMap)
     )
   }
 }
